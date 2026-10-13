@@ -101,4 +101,18 @@ export class AuthService {
       secret: this.configService.getOrThrow<string>('JWT_SECRET'),
     })
   }
+
+  async logout(token: string) {
+    try {
+      const payload = this.jwtService.verify(token, {
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      });
+      const user = await this.userService.findByEmail(payload.email);
+      if (!user) {
+        throw new Error('User not found');
+      }
+    } catch (error) {
+      throw new Error('Invalid refresh token');
+    }
+  }
 }
