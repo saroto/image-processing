@@ -2,11 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, Use
 import { AuthService } from './auth.service';
 import { LoginAuthDto } from './dto/login.dto';
 import { RegisterAuthDto } from './dto/register.dto';
-import { TransformInterceptor } from 'src/interceptor/transform.interceptor';
 import { JwtAuthGuard } from './guard/jwt.guard';
 
 @Controller('auth')
-@UseInterceptors(TransformInterceptor)
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
@@ -23,15 +21,15 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @UseGuards(JwtAuthGuard)
-  async refresh(@Body() refreshTokenDto: string) {
-    return await this.authService.refreshToken(refreshTokenDto);
+  async refresh(@Body() token: string) {
+    // console.log('refresh_token', token);
+    return await this.authService.refreshToken(token);
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
-  async logout(@Body() refreshTokenDto: string) {
-    return await this.authService.logout(refreshTokenDto);
+  async logout(@Body() accessToken: string) {
+    return await this.authService.logout(accessToken);
   }
 
 }

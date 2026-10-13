@@ -7,7 +7,6 @@ import { TransformInterceptor } from 'src/interceptor/transform.interceptor';
 
 @Controller('user')
 @UseGuards(JwtAuthGuard)
-@UseInterceptors(TransformInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) { }
 

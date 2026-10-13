@@ -29,35 +29,34 @@ export class AuthService {
       if (!user) {
         throw new Error('User creation failed');
       }
-      const token = await this.generateToken({ username: user.username, email: user.email });
+      const accessToken = await this.generateAccessToken({ username: user.username, email: user.email });
+      const refreshToken = await this.generateRefreshToken();
       const response: ResponseAuthDto = {
         id: user.id,
         username: user.username,
         email: user.email,
-        access_token: token.accessToken,
-        refresh_token: token.refreshToken,
+        access_token: accessToken,
+        refresh_token: refreshToken,
       }
       return response;
     } catch (error) {
       throw new Error('Error creating user');
     }
   }
-  async generateToken(payload: { username: string; email: string }) {
+  async generateAccessToken(payload: { username: string; email: string }) {
 
-    const [accessToken, refreshToken] = await Promise.all([
-      // Uses the default secret & expiration configured in AuthModule
-      this.jwtService.signAsync(payload),
 
-      // Custom sign options for refresh token
-      this.jwtService.signAsync(payload, {
-        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d') as any,
-      }),
-    ]);
-    return {
-      accessToken,
-      refreshToken,
-    }
+    return this.jwtService.signAsync(payload, {
+      secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN', '1h') as any,
+    });
+  }
+
+  async generateRefreshToken() {
+    return this.jwtService.signAsync({}, {
+      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d') as any,
+    });
   }
 
   async login(loginAuthDto: LoginAuthDto) {
@@ -71,13 +70,14 @@ export class AuthService {
     }
     // Here you would typically validate the password, omitted for brevity
 
-    const token = await this.generateToken({ username: user.username, email: user.email });
+    const accessToken = await this.generateAccessToken({ username: user.username, email: user.email });
+    const refreshToken = await this.generateRefreshToken();
     const response: ResponseAuthDto = {
       id: user.id,
       username: user.username,
       email: user.email,
-      access_token: token.accessToken,
-      refresh_token: token.refreshToken,
+      access_token: accessToken,
+      refresh_token: refreshToken,
     }
     return response;
   }
@@ -86,11 +86,14 @@ export class AuthService {
       const payload = this.jwtService.verify(token, {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       });
+      console.log('refresh_token_payload', payload);
       const user = await this.userService.findByEmail(payload.email);
       if (!user) {
         throw new Error('User not found');
       }
-      return await this.generateToken({ username: user.username, email: user.email });
+      const accessToken = await this.generateAccessToken({ username: user.username, email: user.email });
+      const refreshToken = await this.generateRefreshToken();
+      return { access_token: accessToken, refresh_token: refreshToken };
     } catch (error) {
       throw new Error('Invalid refresh token');
     }
@@ -101,6 +104,8 @@ export class AuthService {
       secret: this.configService.getOrThrow<string>('JWT_SECRET'),
     })
   }
+
+
 
   async logout(token: string) {
     try {
