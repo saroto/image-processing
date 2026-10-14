@@ -21,7 +21,8 @@
     "postinstall": "prisma skills sync || exit 0",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "prisma:migrate:dev": "prisma migrate dev"
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:reset": "prisma migrate reset"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
