@@ -21,15 +21,15 @@ export class AuthController {
   }
 
   @Post('refresh')
-  async refresh(@Body() token: string) {
+  async refresh(@Body('token') token: string) {
     // console.log('refresh_token', token);
     return await this.authService.refreshToken(token);
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
-  async logout(@Body() accessToken: string) {
-    return await this.authService.logout(accessToken);
+  async logout(@Body('user_id') user_id: number) {
+    return await this.authService.logout(user_id);
   }
 
 }

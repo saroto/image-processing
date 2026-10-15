@@ -152,6 +152,7 @@ export class AuthService {
   }
 
   async logout(userId: number) {
+    console.log('Logging out user with ID:', userId);
     await this.revokeAllRefreshTokens(userId);
     return { message: 'Logged out successfully' };
   }
