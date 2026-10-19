@@ -10,10 +10,14 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ClearAccess } from './auth/clearAccess';
+import { UploadImageModule } from './upload-image/upload-image.module';
+import { ConfigurationModule } from './configuration/configuration.module';
+import { ObjectStorageService } from './configuration/object-storage.service';
+
 
 @Module({
-  imports: [UserModule, ImageModule, AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), ScheduleModule.forRoot()],
+  imports: [UserModule, ImageModule, AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), ScheduleModule.forRoot(), UploadImageModule, ConfigModule, ConfigurationModule],
   controllers: [AppController],
-  providers: [AppService, ClearAccess],
+  providers: [AppService, ClearAccess, ObjectStorageService],
 })
 export class AppModule { }
