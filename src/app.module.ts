@@ -12,12 +12,12 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ClearAccess } from './auth/clearAccess';
 import { UploadImageModule } from './upload-image/upload-image.module';
 import { ConfigurationModule } from './configuration/configuration.module';
-import { ObjectStorageService } from './configuration/object-storage.service';
+import { s3Service } from './configuration/s3.service';
 
 
 @Module({
   imports: [UserModule, ImageModule, AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), ScheduleModule.forRoot(), UploadImageModule, ConfigModule, ConfigurationModule],
   controllers: [AppController],
-  providers: [AppService, ClearAccess, ObjectStorageService],
+  providers: [AppService, ClearAccess, s3Service],
 })
 export class AppModule { }

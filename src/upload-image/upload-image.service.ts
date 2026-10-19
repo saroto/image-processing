@@ -1,34 +1,40 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUploadImageDto } from './dto/create-upload-image.dto';
 import { UpdateUploadImageDto } from './dto/update-upload-image.dto';
-import { ObjectStorageService } from 'src/configuration/object-storage.service';
+import { s3Service } from 'src/configuration/s3.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UploadImageService {
   constructor(
-    private readonly objectStorageService: ObjectStorageService,
+    private readonly objectStorageService: s3Service,
     private readonly prismaService: PrismaService
   ) { }
-  async uploadImage(userId: number, file: Buffer | Uint8Array | string) {
+  async uploadImage(file: Express.Multer.File, user_id: number) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
-    if (userId === null || userId === undefined) {
-      throw new BadRequestException('User ID is required');
+    if (!user_id) {
+      throw new BadRequestException('No user_id provided');
     }
-    if (typeof file === 'string') {
-      throw new BadRequestException('File must be a Buffer or Uint8Array');
-    }
-    const fileName = `${Date.now()}-${file.values().next().value}`;
-    await this.objectStorageService.uploadFile(fileName, file, "images");
+    const fileUrl = await this.objectStorageService.uploadFile(file);
     const imageRecord = await this.prismaService.image.create({
       data: {
-
-        userId: userId,
-        path: fileName,
+        userId: user_id,
+        path: fileUrl,
       },
     });
     return imageRecord;
   }
+
+  async download(key: string) {
+    const fileStream = await this.objectStorageService.getFile(key);
+    return fileStream;
+  }
+
+  async getImageUrl(fileName: string, contentType: string) {
+    const { url, key } = await this.objectStorageService.generateUploadPresignedUrl(fileName, contentType);
+    return { url, key };
+  }
+
 } 
