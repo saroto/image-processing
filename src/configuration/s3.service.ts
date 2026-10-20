@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, NoSuchKey } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuid } from 'uuid';
 import { extname } from 'path';
@@ -28,6 +28,7 @@ export class s3Service {
             Bucket: this.bucketName,
             Key: key,
             Body: file.buffer,
+            ContentType: file.mimetype,
         });
 
         await this.s3Client.send(command);
@@ -41,6 +42,42 @@ export class s3Service {
         });
 
         return getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+    }
+
+    // Pulls the raw bytes back out of S3 so they can be piped into sharp.
+    // getFile() only hands out a presigned URL, which sharp cannot read.
+    async getFileBuffer(key: string): Promise<{ buffer: Buffer; contentType?: string }> {
+        const command = new GetObjectCommand({
+            Bucket: this.bucketName,
+            Key: key,
+        });
+
+        try {
+            const response = await this.s3Client.send(command);
+            if (!response.Body) {
+                throw new NotFoundException(`Object ${key} has no content`);
+            }
+
+            const bytes = await response.Body.transformToByteArray();
+            return { buffer: Buffer.from(bytes), contentType: response.ContentType };
+        } catch (error) {
+            if (error instanceof NoSuchKey) {
+                throw new NotFoundException(`Object ${key} not found in bucket`);
+            }
+            throw error;
+        }
+    }
+
+    async uploadBuffer(buffer: Buffer, key: string, contentType: string): Promise<string> {
+        const command = new PutObjectCommand({
+            Bucket: this.bucketName,
+            Key: key,
+            Body: buffer,
+            ContentType: contentType,
+        });
+
+        await this.s3Client.send(command);
+        return key;
     }
 
     async deleteFile(key: string): Promise<void> {

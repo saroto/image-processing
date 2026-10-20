@@ -13,10 +13,11 @@ import { ClearAccess } from './auth/clearAccess';
 import { UploadImageModule } from './upload-image/upload-image.module';
 import { ConfigurationModule } from './configuration/configuration.module';
 import { s3Service } from './configuration/s3.service';
+import { ImgProcessModule } from './img-process/img-process.module';
 
 
 @Module({
-  imports: [UserModule, ImageModule, AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), ScheduleModule.forRoot(), UploadImageModule, ConfigModule, ConfigurationModule],
+  imports: [UserModule, ImageModule, AuthModule, PrismaModule, ConfigModule.forRoot({ isGlobal: true }), ScheduleModule.forRoot(), UploadImageModule, ConfigModule, ConfigurationModule, ImgProcessModule],
   controllers: [AppController],
   providers: [AppService, ClearAccess, s3Service],
 })
