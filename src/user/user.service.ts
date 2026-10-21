@@ -19,9 +19,7 @@ export class UserService {
     return query;
   }
 
-  findAll() {
-    return `This action returns all user`;
-  }
+
 
   async findOne(id: number) {
     try {
@@ -45,11 +43,4 @@ export class UserService {
     return query;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
 }

@@ -3,13 +3,16 @@ import { UploadImageService } from './upload-image.service';
 import { CreateUploadImageDto } from './dto/create-upload-image.dto';
 import { UpdateUploadImageDto } from './dto/update-upload-image.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBasicAuth } from '@nestjs/swagger';
 
 @Controller('upload-image')
+@ApiBasicAuth('bearer')
+@UseInterceptors(FileInterceptor('file'))
 export class UploadImageController {
   constructor(private readonly uploadImageService: UploadImageService) { }
 
   @Post(":user_id")
-  @UseInterceptors(FileInterceptor('file'))
+
   async uploadImage(@Param("user_id", ParseIntPipe) userId, @UploadedFile("file") file: Express.Multer.File) {
     console.log('userId', userId);
     return await this.uploadImageService.uploadImage(file, userId);

@@ -51,7 +51,7 @@ export class ImgProcessService {
             throw new Error('Image format conversion failed');
         }
 
-        return this.s3Service.uploadBuffer(convertedImage, `converted-${key}`, `image/${format}`);
+        return this.s3Service.uploadBuffer(convertedImage, `converted-${key}`, format);
     }
 
 }
